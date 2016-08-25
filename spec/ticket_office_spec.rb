@@ -1,5 +1,7 @@
-describe '1 + 1' do
-  it 'is equal to 2' do
-    expect(1 + 1).to eq 2
+describe 'Ticket office' do
+  describe '#make_reservation' do
+    it 'makes a reservation for the given request'
+    it 'returns a JSON document detailing'
+    it 'reserves any number of seats on any train'
   end
 end
