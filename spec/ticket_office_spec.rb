@@ -25,9 +25,8 @@ describe 'Ticket office' do
 
     it 'returns a JSON document detailing the reservation made' do
       request = { train_id: 'train_1234', seats: 1 }
-      reservation = {
-        train_id: 'train_1234', booking_reference: 'abc', seats: %w{1A}
-      }
+      reservation = 
+        { train_id: 'train_1234', booking_reference: 'abc', seats: %w{1A} }
       allow(@train_data_service).to(
         receive(:reserve_seats).with(request).and_return reservation)
 
@@ -36,6 +35,11 @@ describe 'Ticket office' do
       expect(reservation_doc).to eq reservation.to_json
     end
 
-    it 'reserves any number of seats on any train'
+    it 'reserves any number of seats on any train' do
+      any_request = { train_id: 'express_5432', seats: rand(2..10) }
+      expect(@train_data_service).to receive(:reserve_seats).with any_request
+
+      @ticket_office.make_reservation any_request
+    end
   end
 end
