@@ -31,7 +31,7 @@ describe 'Train Data Service' do
 
   describe '#reserve_seats' do
     describe 'reserving a single seat' do
-      before(:each) do 
+      before :each do 
         @request = { train_id: 'train_1234', seats: 1 }  
       end
 
