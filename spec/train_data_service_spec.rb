@@ -73,7 +73,7 @@ describe 'Train Data Service' do
 
           failure_message_when_negated do |reservation|
             seats = reservation[:seats].join ','
-            booking_ref = reservation[:booking_reference]
+            booking_reference = reservation[:booking_reference]
             message = "Expected no reservation to be made on #{train}, but "
             message << "seats #{seats} were booked "
             message << "under reference number #{booking_reference}"
