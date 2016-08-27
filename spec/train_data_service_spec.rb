@@ -65,13 +65,10 @@ describe 'Train Data Service' do
           expect(reservation).not_to be_made_on 'train_1234'
         end
 
-        def seats_doc *seats
-          { 'seats' => Hash[seats] }.to_json
-        end
-
         def booked(seat_number, coach)
           [
-            "#{seat_number}#{coach}", {
+            "#{seat_number}#{coach}",
+            {
                'booking_reference' => 'ref_number',
                'seat_number' => seat_number,
                'coach' => coach
@@ -126,11 +123,6 @@ describe 'Train Data Service' do
           )
         end
 
-        
-        def seats_doc *seats
-          { 'seats' => Hash[seats] }.to_json
-        end
-
         def free(seat_number, coach)
           [
             "#{seat_number}#{coach}",
@@ -158,5 +150,9 @@ describe 'Train Data Service' do
         end
       end
     end
+  end
+
+  def seats_doc *seats
+    { 'seats' => Hash[seats] }.to_json
   end
 end
