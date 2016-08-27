@@ -7,21 +7,26 @@ describe 'Train Data Service' do
     end
 
     def reserve_seats request
-      seats_on_train = 
+      @seats_on_train = 
         JSON.parse(@train_data_api.seats_for(request[:train_id]))['seats']
-      if seats_on_train.all? { |_id, seat| booked? seat }
+      if @seats_on_train.all? { |_id, seat| booked? seat }
        return  no_reservation_on request[:train_id]
       end
 
-      free_seats = seats_on_train.select { |_id, seat| free? seat }
       {
         train_id: request[:train_id],
         booking_reference: @booking_reference.new_reference_number,
-        seats: free_seats.keys.first(1)
+        seats: free_seats(1)
       }
     end
 
     private
+
+    def free_seats number
+      free_seats = @seats_on_train.select { |_id, seat| free? seat }
+
+      free_seats.keys.first number
+    end
 
     def no_reservation_on train
       { train_id: train, booking_reference: '', seats: [] }
