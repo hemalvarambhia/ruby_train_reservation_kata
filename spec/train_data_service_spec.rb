@@ -45,7 +45,7 @@ describe 'Train Data Service' do
 
           reservation = @train_data_service.reserve_seats @request
 
-          expect(reservation).to eq no_reservation_on('train_1234')
+          expect(reservation).not_to be_made_on 'train_1234'
         end
 
         def seats_doc *seats
@@ -62,8 +62,23 @@ describe 'Train Data Service' do
           }
         end
 
-        def no_reservation_on train
-          { train_id: train, booking_reference: '', seats: [] }
+        RSpec::Matchers.define :be_made_on do |train|
+          match_when_negated do |reservation|
+            reservation == no_reservation_on(train)
+          end
+          
+          def no_reservation_on train
+            { train_id: train, booking_reference: '', seats: [] }
+          end
+
+          failure_message_when_negated do |reservation|
+            seats = reservation[:seats].join ','
+            booking_ref = reservation[:booking_reference]
+            message = "Expected no reservation to be made on #{train}, but "
+            message << "seats #{seats} were booked "
+            message << "under reference number #{booking_reference}"
+            message
+          end
         end
       end
 
