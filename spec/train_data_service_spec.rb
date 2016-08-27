@@ -53,13 +53,13 @@ describe 'Train Data Service' do
         end
 
         def booked(seat_number, coach)
-          {
-            "#{seat_number}#{coach}" => {
+          [
+            "#{seat_number}#{coach}", {
                'booking_reference' => 'ref_number',
                'seat_number' => seat_number,
                'coach' => coach
             }
-          }
+          ]
         end
 
         RSpec::Matchers.define :be_made_on do |train|
