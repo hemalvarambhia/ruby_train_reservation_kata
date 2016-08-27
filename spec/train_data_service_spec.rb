@@ -41,11 +41,6 @@ describe 'Train Data Service' do
     end
   end
 
-  before :each do
-    @train_data_api = double :train_data_api
-    @train_data_service = TrainDataService.new(@train_data_api, nil)
-  end
-
   describe '#reserve_seats' do
     describe 'reserving a single seat' do
       before :each do 
@@ -53,6 +48,11 @@ describe 'Train Data Service' do
       end
 
       context 'when the train is fully-booked' do
+        before :each do
+          @train_data_api = double :train_data_api
+          @train_data_service = TrainDataService.new(@train_data_api, nil)
+        end
+
         it 'does not reserve the seat' do
           allow(@train_data_api).to(
             receive(:seats_for).with('train_1234').and_return(
