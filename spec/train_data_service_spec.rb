@@ -42,6 +42,8 @@ describe 'Train Data Service' do
   end
 
   describe '#reserve_seats' do
+    before(:each) { @train_data_api = double :train_data_api }
+    
     describe 'reserving a single seat' do
       before :each do 
         @request = { train_id: 'train_1234', seats: 1 }  
@@ -49,7 +51,6 @@ describe 'Train Data Service' do
 
       context 'when the train is fully-booked' do
         before :each do
-          @train_data_api = double :train_data_api
           @train_data_service = TrainDataService.new(@train_data_api, nil)
         end
 
