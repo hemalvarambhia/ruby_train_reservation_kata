@@ -49,9 +49,7 @@ describe 'Train Data Service' do
         end
 
         def seats_doc *seats
-          { 
-            'seats' => seats.inject({}){ |doc, seat| doc.merge seat }
-          }.to_json
+          { 'seats' => Hash[seats] }.to_json
         end
 
         def booked(seat_number, coach)
