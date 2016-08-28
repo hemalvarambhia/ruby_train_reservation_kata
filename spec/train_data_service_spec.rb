@@ -13,11 +13,11 @@ describe 'Train Data Service' do
        return  no_reservation_on request[:train_id]
       end
 
-      {
+      @train_data_api.reserve(
         train_id: request[:train_id],
         booking_reference: @booking_reference.new_reference_number,
         seats: %w{1A}
-      }
+      )
     end
 
     private
@@ -82,12 +82,15 @@ describe 'Train Data Service' do
           allow(@train_data_api).to(
             receive(:seats_for).with('train_1234').and_return(
               seats_doc(free(1, 'A'), free(2, 'A'), free(3, 'A')) 
+          ))
+          expect(@train_data_api).to(
+            receive(:reserve).with(
+              booking_reference: 'a_reference_number',
+              train_id: 'train_1234', seats: %w{1A}
             )
           )
-
-          reservation = @train_data_service.reserve_seats @request
-
-          expect(reservation).to be_made_on('train_1234').for_seats '1A'
+          
+          @train_data_service.reserve_seats @request
         end
 
         def free(seat_number, coach)
