@@ -66,25 +66,6 @@ describe 'Train Data Service' do
             }
           ]
         end
-
-        RSpec::Matchers.define :be_made_on do |train|
-          match_when_negated do |reservation|
-            reservation == no_reservation_on(train)
-          end
-          
-          def no_reservation_on train
-            { train_id: train, booking_reference: '', seats: [] }
-          end
-
-          failure_message_when_negated do |reservation|
-            seats = reservation[:seats].join ','
-            booking_reference = reservation[:booking_reference]
-            message = "Expected no reservation to be made on #{train}, but "
-            message << "seats #{seats} were booked "
-            message << "under reference number #{booking_reference}"
-            message
-          end
-        end
       end
 
       context 'when the train has no existing reservations' do
@@ -105,13 +86,7 @@ describe 'Train Data Service' do
 
           reservation = @train_data_service.reserve_seats @request
 
-          expect(reservation).to(
-            eq(
-              train_id: 'train_1234',
-              booking_reference: 'a_reference_number',
-              seats: %w{1A}
-            )
-          )
+          expect(reservation).to be_made_on('train_1234').for_seats '1A'
         end
 
         def free(seat_number, coach)
@@ -145,5 +120,45 @@ describe 'Train Data Service' do
 
   def seats_doc *seats
     { 'seats' => Hash[seats] }.to_json
+  end
+
+  RSpec::Matchers.define :be_made_on do |train|
+    match do |reservation|
+      reservation[:seats] == @seats and
+        reservation[:train_id] == train and
+        reservation[:booking_reference].size > 0
+    end
+    
+    chain :for_seats do |*seats|
+      @seats = seats
+    end
+
+    failure_message do |reservation|
+      actual_train = reservation[:train_id]
+      seats = reservation[:seats].join ','
+      booking_reference = reservation[:booking_reference]
+      message = "Expected reservation to be made on '#{train}' "
+      message << "for seats #{@seats.join(',')} but\n"
+      message << "a reservation was made on '#{actual_train}' for "
+      message << "seats #{seats} under ref no. #{booking_reference}"
+      message
+    end
+    
+    match_when_negated do |reservation|
+      reservation == no_reservation_on(train)
+    end
+
+    def no_reservation_on train
+      { train_id: train, booking_reference: '', seats: [] }
+    end
+
+    failure_message_when_negated do |reservation|
+      seats = reservation[:seats].join ','
+      booking_reference = reservation[:booking_reference]
+      message = "Expected no reservation to be made on #{train}, but "
+      message << "seats #{seats} were booked "
+      message << "under reference number #{booking_reference}"
+      message
+    end
   end
 end
