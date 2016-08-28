@@ -77,6 +77,7 @@ describe 'Train Data Service' do
             @train_data_api, booking_reference
           )
         end
+        
         it 'reserves the first available seat' do
           allow(@train_data_api).to(
             receive(:seats_for).with('train_1234').and_return(
@@ -99,7 +100,6 @@ describe 'Train Data Service' do
             }
           ]
         end
-
       end
       
       context 'when the train is under 70% reserved' do
