@@ -16,24 +16,14 @@ describe 'Train Data Service' do
       {
         train_id: request[:train_id],
         booking_reference: @booking_reference.new_reference_number,
-        seats: free_seats(1)
+        seats: %w{1A}
       }
     end
 
     private
 
-    def free_seats number
-      free_seats = @seats_on_train.select { |_id, seat| free? seat }
-
-      free_seats.keys.first number
-    end
-
     def no_reservation_on train
       { train_id: train, booking_reference: '', seats: [] }
-    end
-
-    def free? seat
-      seat['booking_reference'].empty?
     end
 
     def booked? seat
