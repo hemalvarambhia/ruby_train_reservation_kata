@@ -88,6 +88,14 @@ describe 'Train Data Service' do
           @train_data_service.reserve_seats @request
         end
 
+        describe 'when the request is successful' do
+          it 'returns the reservation that was made'
+        end
+
+        describe 'when the request is not successful' do
+          it 'does not reserve the seats'
+        end
+
         def free(seat_number, coach)
           [
             "#{seat_number}#{coach}",
