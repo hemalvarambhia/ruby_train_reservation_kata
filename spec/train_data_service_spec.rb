@@ -13,13 +13,17 @@ describe 'Train Data Service' do
        return  no_reservation_on request[:train_id]
       end
 
-      reservation =
-        {
+      reservation = {
           train_id: request[:train_id],
           booking_reference: @booking_reference.new_reference_number,
-          seats: %w{1A} }
+          seats: %w{1A}
+        }
 
-      @train_data_api.reserve reservation
+      response = @train_data_api.reserve reservation
+
+      if response=~/already booked/
+        return no_reservation_on(request[:train_id])
+      end
 
       reservation
     end
@@ -106,8 +110,21 @@ describe 'Train Data Service' do
           end
         end
 
-        describe 'when the request is not successful' do
-          it 'does not reserve the seats'
+        describe 'when the seat has been reserved by someone else first' do
+          it 'does not reserve the seat' do
+            reservation = {
+              booking_reference: 'a_reference_number',
+              train_id: 'train_1234', seats: %w{1A}
+            }
+            allow(@train_data_api).to(
+              receive(:reserve).with(reservation).and_return(
+              'already booked with reference: existing'
+            ))
+            
+            reservation = @train_data_service.reserve_seats @request
+            
+            expect(reservation).not_to be_made_on 'train_1234'
+          end
         end
 
         def free(seat_number, coach)
