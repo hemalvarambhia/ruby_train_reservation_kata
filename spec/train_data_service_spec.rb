@@ -110,7 +110,7 @@ describe 'Train Data Service' do
           end
         end
 
-        describe 'when the seat has been reserved by someone else first' do
+        describe 'when someone else ends up reserving the seat first' do
           it 'does not reserve the seat' do
             reservation = {
               booking_reference: 'a_reference_number',
