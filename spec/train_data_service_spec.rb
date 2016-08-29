@@ -13,11 +13,15 @@ describe 'Train Data Service' do
        return  no_reservation_on request[:train_id]
       end
 
-      @train_data_api.reserve(
-        train_id: request[:train_id],
-        booking_reference: @booking_reference.new_reference_number,
-        seats: %w{1A}
-      )
+      reservation =
+        {
+          train_id: request[:train_id],
+          booking_reference: @booking_reference.new_reference_number,
+          seats: %w{1A} }
+
+      @train_data_api.reserve reservation
+
+      reservation
     end
 
     private
@@ -74,12 +78,13 @@ describe 'Train Data Service' do
           @train_data_service = TrainDataService.new(
             @train_data_api, booking_reference
           )
+          allow(@train_data_api).to(
+            receive(:seats_for).with('train_1234').and_return(
+              seats_doc(free(1, 'A'), free(2, 'A'), free(3, 'A'))
+          ))
         end
         
         it 'reserves the first available seat' do
-          allow(@train_data_api).to(
-            receive(:seats_for).with('train_1234').and_return(
-              seats_doc(free(1, 'A'), free(2, 'A'), free(3, 'A'))))
           expect(@train_data_api).to(
             receive(:reserve).with(
               booking_reference: 'a_reference_number',
@@ -89,7 +94,16 @@ describe 'Train Data Service' do
         end
 
         describe 'when the request is successful' do
-          it 'returns the reservation that was made'
+          it 'returns the reservation that was made' do
+            allow(@train_data_api).to(
+              receive(:reserve).with(
+                booking_reference: 'a_reference_number',
+                train_id: 'train_1234', seats: %w{1A}))
+          
+            reservation = @train_data_service.reserve_seats @request
+
+            expect(reservation).to be_made_on('train_1234').for_seats '1A'
+          end
         end
 
         describe 'when the request is not successful' do
