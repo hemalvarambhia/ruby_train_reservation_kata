@@ -10,14 +10,14 @@ describe 'Train Data Service' do
       @seats_on_train = 
         JSON.parse(@train_data_api.seats_for(request[:train_id]))['seats']
       if @seats_on_train.all? { |_id, seat| booked? seat }
-       return  no_reservation_on request[:train_id]
+        return  no_reservation_on request[:train_id]
       end
 
       reservation = {
-          train_id: request[:train_id],
-          booking_reference: @booking_reference.new_reference_number,
-          seats: first_available_seat
-        }
+        train_id: request[:train_id],
+        booking_reference: @booking_reference.new_reference_number,
+        seats: first_available_seat
+      }
 
       response = @train_data_api.reserve reservation
 
