@@ -78,11 +78,13 @@ describe 'Train Data Service' do
       end
 
       context 'when the train is fully-booked' do
-        it 'does not reserve the seat' do
+        before :each do
           allow(@train_data_api).to(
             receive(:seats_for).with('train_1234').and_return(
               seats_doc(booked(1, 'A'), booked(2, 'A'), booked(3, 'A'))))
+        end
 
+        it 'does not reserve the seat' do
           reservation = @train_data_service.reserve_seats @request
 
           expect(reservation).not_to be_made_on 'train_1234'
