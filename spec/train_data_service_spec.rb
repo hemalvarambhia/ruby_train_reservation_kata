@@ -186,8 +186,28 @@ describe 'Train Data Service' do
           end
         end
 
-        context 'and becomes 70% reserved after the booking' do
-          it 'reserves the first available seat'
+        context 'and becomes exactly 70% reserved after the booking' do
+          before :each do
+            allow(@train_data_api).to(
+              receive(:seats_for).with('train_1234').and_return(
+                seats_doc(
+                  booked(1, 'A'), booked(2, 'A'), booked(3, 'A'),
+                  booked(4, 'A'), booked(5, 'A'), booked(6, 'A'),
+                  free(7, 'A'), free(8, 'A'), free(9, 'A'), free(10, 'A')
+                )
+            ))
+          end
+
+          it 'reserves the first available seat' do
+            reservation = {
+              train_id: 'train_1234',
+              booking_reference: 'a_reference_number',
+              seats: %w{7A}
+            }
+            expect(@train_data_api).to receive(:reserve).with reservation
+
+            @train_data_service.reserve_seats @request
+          end
         end
       end
     end
