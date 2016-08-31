@@ -1,5 +1,11 @@
 require 'json'
 describe 'Train Data Service' do
+  class Fixnum
+    def percent
+      Rational(self, 100)
+    end
+  end
+
   class TrainDataService
     def initialize(train_data_api, booking_reference_service)
       @train_data_api = train_data_api
@@ -9,8 +15,9 @@ describe 'Train Data Service' do
     def reserve_seats request
       @seats_on_train = 
         JSON.parse(@train_data_api.seats_for(request[:train_id]))['seats']
-      if @seats_on_train.all? { |_id, seat| booked? seat }
-        return  no_reservation_on request[:train_id]
+
+      if percentage_including(request) > 70.percent
+        return no_reservation_on request[:train_id]
       end
 
       reservation = {
@@ -29,6 +36,13 @@ describe 'Train Data Service' do
     end
 
     private
+
+    def percentage_including request
+      number_booked = 
+        @seats_on_train.count { |_id, seat| booked? seat } + request[:seats]
+
+      Rational(number_booked, @seats_on_train.size)
+    end
 
     def first_available_seat
       id, seat = @seats_on_train.find { |_id, seat| free? seat }
@@ -128,14 +142,17 @@ describe 'Train Data Service' do
       end
       
       context 'when the train is under 70% reserved' do
+        before :each do
+          booking_reference = double(
+            :booking_reference, new_reference_number: 'a_reference_number'
+          )
+          @train_data_service = TrainDataService.new(
+            @train_data_api, booking_reference
+          )
+        end
+
         context 'and remains so after the reservation' do
           before :each do
-            booking_reference = double(
-              :booking_reference, new_reference_number: 'a_reference_number'
-            )
-            @train_data_service = TrainDataService.new(
-              @train_data_api, booking_reference
-            )
             allow(@train_data_api).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(booked(1, 'A'), free(2, 'A'), free(3, 'A'))
@@ -147,6 +164,7 @@ describe 'Train Data Service' do
               train_id: 'train_1234', booking_reference: 'a_reference_number',
               seats: %w{2A}
             )
+
             reservation = @train_data_service.reserve_seats @request
 
 	    expect(reservation).to be_made_on('train_1234').for_seats '2A'
@@ -154,7 +172,18 @@ describe 'Train Data Service' do
         end
 
         context 'but ends up being > 70% reserved after the booking' do
-          it 'does not reserve the seat'
+          before :each do
+            allow(@train_data_api).to(
+              receive(:seats_for).with('train_1234').and_return(
+                seats_doc(booked(1, 'A'), free(2, 'A'), booked(3, 'A'))
+            ))
+          end
+
+          it 'does not reserve the seat' do
+            reservation = @train_data_service.reserve_seats @request
+
+            expect(reservation).not_to be_made_on 'train_1234'
+          end
         end
 
         context 'and becomes 70% reserved after the booking' do
