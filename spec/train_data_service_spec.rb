@@ -16,7 +16,7 @@ describe 'Train Data Service' do
       reservation = {
           train_id: request[:train_id],
           booking_reference: @booking_reference.new_reference_number,
-          seats: %w{1A}
+          seats: first_available_seat
         }
 
       response = @train_data_api.reserve reservation
@@ -29,6 +29,16 @@ describe 'Train Data Service' do
     end
 
     private
+
+    def first_available_seat
+      id, seat = @seats_on_train.find { |_id, seat| free? seat }
+      
+      [ id ]
+    end
+
+    def free? seat
+      seat['booking_reference'].empty?
+    end
 
     def no_reservation_on train
       { train_id: train, booking_reference: '', seats: [] }
@@ -60,17 +70,6 @@ describe 'Train Data Service' do
           reservation = @train_data_service.reserve_seats @request
 
           expect(reservation).not_to be_made_on 'train_1234'
-        end
-
-        def booked(seat_number, coach)
-          [
-            "#{seat_number}#{coach}",
-            {
-               'booking_reference' => 'ref_number',
-               'seat_number' => seat_number,
-               'coach' => coach
-            }
-          ]
         end
       end
 
@@ -126,22 +125,32 @@ describe 'Train Data Service' do
             expect(reservation).not_to be_made_on 'train_1234'
           end
         end
-
-        def free(seat_number, coach)
-          [
-            "#{seat_number}#{coach}",
-            {
-              'booking_reference' => '',
-              'seat_number' => seat_number,
-              'coach' => coach
-            }
-          ]
-        end
       end
       
       context 'when the train is under 70% reserved' do
+        before :each do
+          booking_reference =
+            double(:booking_reference,
+                   new_reference_number: 'a_reference_number')
+          @train_data_service = TrainDataService.new(
+            @train_data_api, booking_reference
+          )
+          allow(@train_data_api).to(
+            receive(:seats_for).with('train_1234').and_return(
+              seats_doc(booked(1, 'A'), free(2, 'A'), free(3, 'A'))
+          ))
+        end
+
         context 'and remains so after the reservation' do
-          it 'reserves the first available seat'
+          it 'reserves the first available seat' do
+            expect(@train_data_api).to receive(:reserve).with(
+              train_id: 'train_1234', booking_reference: 'a_reference_number',
+              seats: %w{2A}
+            )
+            reservation = @train_data_service.reserve_seats @request
+
+	    expect(reservation).to be_made_on('train_1234').for_seats '2A'
+          end
         end
 
         context 'but ends up being > 70% reserved after the booking' do
@@ -157,6 +166,28 @@ describe 'Train Data Service' do
 
   def seats_doc *seats
     { 'seats' => Hash[seats] }.to_json
+  end
+
+  def free(seat_number, coach)
+    [
+      "#{seat_number}#{coach}",
+      {
+        'booking_reference' => '',
+        'seat_number' => seat_number,
+        'coach' => coach
+      }
+    ]
+  end
+
+  def booked(seat_number, coach)
+    [
+      "#{seat_number}#{coach}",
+      {
+        'booking_reference' => 'ref_number',
+        'seat_number' => seat_number,
+        'coach' => coach
+      }
+    ]
   end
 
   RSpec::Matchers.define :be_made_on do |train|
