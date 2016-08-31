@@ -128,20 +128,20 @@ describe 'Train Data Service' do
       end
       
       context 'when the train is under 70% reserved' do
-        before :each do
-          booking_reference =
-            double(:booking_reference,
-                   new_reference_number: 'a_reference_number')
-          @train_data_service = TrainDataService.new(
-            @train_data_api, booking_reference
-          )
-          allow(@train_data_api).to(
-            receive(:seats_for).with('train_1234').and_return(
-              seats_doc(booked(1, 'A'), free(2, 'A'), free(3, 'A'))
-          ))
-        end
-
         context 'and remains so after the reservation' do
+          before :each do
+            booking_reference = double(
+              :booking_reference, new_reference_number: 'a_reference_number'
+            )
+            @train_data_service = TrainDataService.new(
+              @train_data_api, booking_reference
+            )
+            allow(@train_data_api).to(
+              receive(:seats_for).with('train_1234').and_return(
+                seats_doc(booked(1, 'A'), free(2, 'A'), free(3, 'A'))
+            ))
+          end
+          
           it 'reserves the first available seat' do
             expect(@train_data_api).to receive(:reserve).with(
               train_id: 'train_1234', booking_reference: 'a_reference_number',
