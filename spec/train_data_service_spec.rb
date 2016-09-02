@@ -23,7 +23,7 @@ describe 'Train Data Service' do
       reservation = {
         train_id: request[:train_id],
         booking_reference: @booking_reference.new_reference_number,
-        seats: first_available_seat
+        seats: first_available_seat(request[:seats])
       }
 
       response = @train_data_api.reserve reservation
@@ -44,10 +44,10 @@ describe 'Train Data Service' do
       Rational(number_booked, @seats_on_train.size)
     end
 
-    def first_available_seat
-      id, seat = @seats_on_train.find { |_id, seat| free? seat }
-      
-      [ id ]
+    def first_available_seat number
+      free_seats = @seats_on_train.select { |_id, seat| free? seat }
+
+      free_seats.keys.first number
     end
 
     def free? seat
@@ -196,6 +196,29 @@ describe 'Train Data Service' do
             expect(@train_data_api).to receive(:reserve).with reservation
 
             @train_data_service.reserve_seats @request
+          end
+        end
+      end
+
+      describe 'booking multiple seats' do
+        context 'when the train can accommodate the booking' do
+          before :each do
+            allow(@train_data_api).to(
+              receive(:seats_for).with('train_1234').and_return(
+                seats_doc(
+                  booked(1, 'A'), free(2, 'A'), free(3, 'A'),
+                  free(4, 'A'), free(5, 'A'), free(6, 'A')
+                )
+            ))
+          end
+
+          it 'books all the seats in one carriage' do
+            request = { train_id: 'train_1234', seats: 3 }
+          
+	    expect(@train_data_api).to(
+              receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
+
+            @train_data_service.reserve_seats request            
           end
         end
       end
