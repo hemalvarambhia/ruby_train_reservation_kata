@@ -205,30 +205,30 @@ describe 'Train Data Service' do
           end
         end
       end
+    end  
 
-      describe 'booking multiple seats' do
-        context 'when the train can accommodate the booking' do
-          before :each do
-            allow(@train_data_api).to(
-              receive(:seats_for).with('train_1234').and_return(
-                seats_doc(
-                  booked(1, 'A'), free(5, 'A'), free(4, 'A'),
-                  free(3, 'A'), free(2, 'A'), free(6, 'A')
-                )
-            ))
-          end
+    describe 'booking multiple seats' do
+      context 'when the train can accommodate the booking' do
+        before :each do
+          allow(@train_data_api).to(
+            receive(:seats_for).with('train_1234').and_return(
+              seats_doc(
+                booked(1, 'A'), free(5, 'A'), free(4, 'A'),
+                free(3, 'A'), free(2, 'A'), free(6, 'A')
+              )
+          ))
+        end
 
-          it 'books all the seats in one carriage' do
-            request = { train_id: 'train_1234', seats: 3 }
+        it 'books all the seats in one carriage' do
+          request = { train_id: 'train_1234', seats: 3 }
           
-	    expect(@train_data_api).to(
-              receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
+	  expect(@train_data_api).to(
+            receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
 
-            @train_data_service.reserve_seats request            
-          end
+          @train_data_service.reserve_seats request            
         end
       end
-    end
+    end  
   end
 
   def seats_doc *seats
