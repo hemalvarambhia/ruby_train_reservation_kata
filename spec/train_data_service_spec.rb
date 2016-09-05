@@ -13,8 +13,7 @@ describe 'Train Data Service' do
     end
 
     def reserve_seats request
-      @seats_on_train = 
-        JSON.parse(@train_data_api.seats_for(request[:train_id]))['seats']
+      @seats_on_train = seats_on request[:train_id]
 
       if percentage_including(request) > 70.percent
         return no_reservation_on request[:train_id]
@@ -36,6 +35,13 @@ describe 'Train Data Service' do
     end
 
     private
+
+    def seats_on train_id 
+      seats_doc = JSON.parse(@train_data_api.seats_for(train_id))['seats']
+      Hash[seats_doc
+        .sort_by { |_id, seat| [ seat['seat_number'] ] }
+      ]
+    end
 
     def percentage_including request
       number_booked = 
@@ -206,8 +212,8 @@ describe 'Train Data Service' do
             allow(@train_data_api).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(
-                  booked(1, 'A'), free(2, 'A'), free(3, 'A'),
-                  free(4, 'A'), free(5, 'A'), free(6, 'A')
+                  booked(1, 'A'), free(5, 'A'), free(4, 'A'),
+                  free(3, 'A'), free(2, 'A'), free(6, 'A')
                 )
             ))
           end
