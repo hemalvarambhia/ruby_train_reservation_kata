@@ -205,6 +205,26 @@ describe 'Train Data Service' do
           end
         end
       end
+
+      describe 'multiple carriages' do
+        context 'when a carriage is completely free' do
+          it 'reserves the seat'
+        end
+
+        context 'when a carriage is under 70% reserved' do
+          context 'and remains so after the booking' do
+            it 'reserves the seat'
+          end
+
+          context 'but ends up being > 70% reserved after the booking' do
+            it 'does not reserve the seat'
+          end
+
+          context 'and becomes exactly 70% reserved after the booking' do
+            it 'reserves the seat'
+          end
+        end
+      end
     end  
 
     describe 'booking multiple seats' do
