@@ -36,7 +36,9 @@ class TrainDataService
   private
 
   def seats_on train_id 
-    seats_doc = JSON.parse(@train_data_api.seats_for(train_id))['seats']
+    seats_doc = JSON.parse(
+      @train_data_api.seats_for(train_id), symbolize_names: true)[:seats]
+
     seats_doc
       .map { |_id, seat| Seat.new seat }
       .sort_by { |seat| seat.seat_number }    
@@ -65,19 +67,19 @@ class TrainDataService
     end
 
     def seat_number
-      @args['seat_number']
+      @args[:seat_number]
     end
 
     def id
-      "#{@args['seat_number']}#{@args['coach']}"
+      "#{@args[:seat_number]}#{@args[:coach]}"
     end
 
     def booked?
-      @args['booking_reference'].size > 0
+      @args[:booking_reference].size > 0
     end
 
     def free?
-      @args['booking_reference'].empty?
+      !booked?
     end
   end
 end
