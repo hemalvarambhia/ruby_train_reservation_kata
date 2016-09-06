@@ -18,11 +18,7 @@ class TrainDataService
       return no_reservation_on request[:train_id]
     end
 
-    reservation = {
-      train_id: request[:train_id],
-      booking_reference: @booking_reference.new_reference_number,
-      seats: first_available_seat(request[:seats])
-    }
+    reservation = make_reservation request
 
     response = @train_data_api.reserve reservation
 
@@ -34,6 +30,14 @@ class TrainDataService
   end
 
   private
+
+  def make_reservation request
+    {
+      train_id: request[:train_id],
+      booking_reference: @booking_reference.new_reference_number,
+      seats: first_available_seat(request[:seats])
+    }
+  end
 
   def seats_on train_id 
     seats_doc = JSON.parse(
