@@ -37,33 +37,47 @@ class TrainDataService
 
   def seats_on train_id 
     seats_doc = JSON.parse(@train_data_api.seats_for(train_id))['seats']
-    Hash[seats_doc
-      .sort_by { |_id, seat| [ seat['seat_number'] ] }
-    ]
+    seats_doc
+      .map { |_id, seat| Seat.new seat }
+      .sort_by { |seat| seat.seat_number }    
   end
 
   def percentage_including request
     number_booked = 
-      @seats_on_train.count { |_id, seat| booked? seat } + request[:seats]
+      @seats_on_train.count { |seat| seat.booked? } + request[:seats]
 
     Rational(number_booked, @seats_on_train.size)
   end
 
   def first_available_seat number
-    free_seats = @seats_on_train.select { |_id, seat| free? seat }
+    free_seats = @seats_on_train.select { |seat| seat.free? }
 
-    free_seats.keys.first number
-  end
-
-  def free? seat
-    seat['booking_reference'].empty?
+    free_seats.first(number).map { |seat| seat.id }
   end
 
   def no_reservation_on train
     { train_id: train, booking_reference: '', seats: [] }
   end
 
-  def booked? seat
-    seat['booking_reference'].size > 0
+  class Seat
+    def initialize args
+      @args = args
+    end
+
+    def seat_number
+      @args['seat_number']
+    end
+
+    def id
+      "#{@args['seat_number']}#{@args['coach']}"
+    end
+
+    def booked?
+      @args['booking_reference'].size > 0
+    end
+
+    def free?
+      @args['booking_reference'].empty?
+    end
   end
 end
