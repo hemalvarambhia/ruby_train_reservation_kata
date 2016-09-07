@@ -23,6 +23,10 @@ describe 'Train Data Service' do
         end
 
         it 'does not reserve the seat' do
+          expect(@train_data_api).to(
+            receive(:reserve).with(
+              booking_reference: '', train_id: 'train_1234', seats: %w{}))
+
           reservation = @train_data_service.reserve_seats @request
 
           expect(reservation).not_to be_made_on 'train_1234'
@@ -107,6 +111,10 @@ describe 'Train Data Service' do
           end
 
           it 'does not reserve the seat' do
+            expect(@train_data_api).to(
+              receive(:reserve).with(
+                booking_reference: '', train_id: 'train_1234', seats: %w{}))
+      
             reservation = @train_data_service.reserve_seats @request
 
             expect(reservation).not_to be_made_on 'train_1234'
