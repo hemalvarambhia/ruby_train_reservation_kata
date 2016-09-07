@@ -35,7 +35,7 @@ class TrainDataService
     seats_doc = JSON.parse(
       @train_data_api.seats_for(train_id), symbolize_names: true)[:seats]
 
-    Train.new(seats_doc.map { |_id, seat| Seat.new seat })
+    Train.new(seats_doc.map { |_, seat| Seat.new seat })
   end
 
   def make_reservation request
@@ -67,7 +67,7 @@ class TrainDataService
         @seats_on_train.select { |seat| seat.free? }.map { |seat| seat.id }
 
       free_seats.first(number)
-    end
+    end    
   end
 
   class Seat
