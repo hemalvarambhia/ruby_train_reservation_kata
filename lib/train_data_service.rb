@@ -17,8 +17,7 @@ class TrainDataService
       if @train.overbooked?(request)
         no_reservation_on request[:train_id]
       else
-        free_seats = @train.first_free_seats(request)
-        make_reservation(request, free_seats)
+        make_reservation(request)
       end
 
     response = @train_data_api.reserve reservation
@@ -39,11 +38,11 @@ class TrainDataService
     Train.new(seats_doc.map { |_, seat| Seat.new seat })
   end
 
-  def make_reservation(request, seats)
+  def make_reservation(request)
     {
       train_id: request[:train_id],
       booking_reference: @booking_reference.new_reference_number,
-      seats: seats
+      seats: @train.first_free_seats(request)
     }
   end
 
