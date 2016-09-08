@@ -72,6 +72,15 @@ class TrainDataService
         end 
     end
 
+    def overbooked? request
+      number_booked =
+        @seats_on_train.count { |seat| seat.booked? } + request[:seats]
+
+      Rational(number_booked, @seats_on_train.size) > 70.percent
+    end
+
+    private
+
     def underbooked?(request, seats)
       number_booked = seats.count { |seat| seat.booked? } + request[:seats]
 
@@ -81,14 +90,6 @@ class TrainDataService
     def seats_by_coach
       @seats_on_train.group_by { |seat| seat.coach }
     end
-
-    def overbooked? request
-      number_booked =
-        @seats_on_train.count { |seat| seat.booked? } + request[:seats]
-
-      Rational(number_booked, @seats_on_train.size) > 70.percent
-    end
-
   end
 
   class Seat
