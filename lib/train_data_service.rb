@@ -83,10 +83,6 @@ class TrainDataService
 
       Rational(number_booked, seats.size) <= 70.percent
     end
-
-    def seats_by_coach
-      @seats_on_train.group_by { |seat| seat.coach }
-    end
   end
 
   class Seat
