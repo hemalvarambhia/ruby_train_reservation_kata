@@ -73,10 +73,9 @@ class TrainDataService
 
     def first_underbooked_carriage request
       seats_by_coach = @seats_on_train.group_by { |seat| seat.coach }
-      coach, seats = 
-        seats_by_coach.find do |coach, seats|
-          underbooked?(request, seats)
-        end 
+      seats_by_coach.find do |coach, seats|
+        underbooked?(request, seats)
+      end 
     end
 
     def underbooked?(request, seats)
