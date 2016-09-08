@@ -17,7 +17,9 @@ class TrainDataService
       if @train.overbooked?(request)
         no_reservation_on request[:train_id]
       else
-        make_reservation request
+        free_seats = 
+          first_free_seats(request)
+        make_reservation(request, free_seats)
       end
 
     response = @train_data_api.reserve reservation
@@ -37,12 +39,28 @@ class TrainDataService
 
     Train.new(seats_doc.map { |_, seat| Seat.new seat })
   end
+  
+  def first_free_seats request
+    coach, seats = 
+      @train.seats_by_coach.find do |coach, seats|
+        underbooked?(request, seats)
+      end 
 
-  def make_reservation request
+    seats.select { |seat| seat.free? }.map { |seat| seat.id }
+      .first request[:seats] 
+  end
+  
+  def underbooked?(request, seats)
+    number_booked = seats.count { |seat| seat.booked? } + request[:seats]
+
+    Rational(number_booked, seats.size) <= 70.percent
+  end
+
+  def make_reservation(request, seats)
     {
       train_id: request[:train_id],
       booking_reference: @booking_reference.new_reference_number,
-      seats: @train.free_seats(request[:seats])
+      seats: seats #@train.free_seats(request[:seats])
     }
   end
 
@@ -53,6 +71,10 @@ class TrainDataService
   class Train
     def initialize seats
       @seats_on_train = seats.sort_by { |seat| seat.seat_number }
+    end
+
+    def seats_by_coach
+      @seats_on_train.group_by { |seat| seat.coach }
     end
 
     def overbooked? request
@@ -77,6 +99,10 @@ class TrainDataService
 
     def seat_number
       @args[:seat_number]
+    end
+
+    def coach
+      @args[:coach]
     end
 
     def id
