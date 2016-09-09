@@ -13,11 +13,12 @@ class TrainDataService
 
   def reserve_seats request
     @train = train_with_id request[:train_id]
+    coach = @train.select { |coach| coach.underbooked? request }
     reservation = 
-      if @train.overbooked?(request)
+      if coach.none?
         no_reservation_on request[:train_id]
       else
-        make_reservation(request)
+        make_reservation(request, coach.first)
       end
 
     response = @train_data_api.reserve reservation
@@ -34,15 +35,17 @@ class TrainDataService
   def train_with_id train_id
     seats_doc = JSON.parse(
       @train_data_api.seats_for(train_id), symbolize_names: true)[:seats]
-
-    Coach.new(seats_doc.map { |_, seat| Seat.new seat })
+    all_seats = seats_doc.map { |_, seat| Seat.new seat }
+    all_seats.group_by { |seat| seat.coach }.map do |_, seats|
+      Coach.new seats
+    end
   end
 
-  def make_reservation(request)
+  def make_reservation(request, coach)
     {
       train_id: request[:train_id],
       booking_reference: @booking_reference.new_reference_number,
-      seats: @train.first_free_seats(request)
+      seats: coach.first_free_seats(request)
     }
   end
 
@@ -60,11 +63,11 @@ class TrainDataService
         .first request[:seats] 
     end
 
-    def overbooked? request
+    def underbooked? request
       number_booked =
         @seats.count { |seat| seat.booked? } + request[:seats]
 
-      Rational(number_booked, @seats.size) > 70.percent
+      Rational(number_booked, @seats.size) <= 70.percent
     end
   end
 
