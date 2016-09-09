@@ -160,7 +160,7 @@ describe 'Train Data Service' do
               ))
           end
 
-          it 'reserves the seat' do
+          it 'reserves the seat in that carriage' do
              expect(@train_data_api).to(
                receive(:reserve).with(hash_including(seats: %w{1B})))
 
@@ -182,7 +182,7 @@ describe 'Train Data Service' do
                 ))
             end
             
-            it 'reserves the seat' do
+            it 'reserves the seat in that carriage' do
                expect(@train_data_api).to(
                  receive(:reserve).with(hash_including(seats: %w{1B})))
 
