@@ -13,12 +13,13 @@ class TrainDataService
 
   def reserve_seats request
     @train = train_with_id request[:train_id]
-    coach = @train.select { |coach| coach.underbooked? request }
+    coach = @train.find { |coach| coach.underbooked? request }
     reservation = 
-      if coach.none?
+      if coach.nil?
         no_reservation_on request[:train_id]
       else
-        make_reservation(request, coach.first)
+        coach.make_reservation(
+          request, @booking_reference.new_reference_number)
       end
 
     response = @train_data_api.reserve reservation
@@ -41,14 +42,6 @@ class TrainDataService
     end
   end
 
-  def make_reservation(request, coach)
-    {
-      train_id: request[:train_id],
-      booking_reference: @booking_reference.new_reference_number,
-      seats: coach.first_free_seats(request)
-    }
-  end
-
   def no_reservation_on train
     { train_id: train, booking_reference: '', seats: [] }
   end
@@ -56,6 +49,14 @@ class TrainDataService
   class Coach
     def initialize seats
       @seats = seats.sort_by { |seat| seat.seat_number }
+    end
+
+    def make_reservation(request, booking_ref)
+      {
+        train_id: request[:train_id],
+        booking_reference: booking_ref,
+        seats: first_free_seats(request)
+      }
     end
 
     def first_free_seats request
