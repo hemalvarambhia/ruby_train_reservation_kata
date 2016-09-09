@@ -45,7 +45,7 @@ class TrainDataService
     {
       train_id: request[:train_id],
       booking_reference: @booking_reference.new_reference_number,
-      seats: coach.first_free_seats(request)
+      seats: coach.first_free_seats(request[:seats])
     }
   end
 
@@ -58,9 +58,9 @@ class TrainDataService
       @seats = seats.sort_by { |seat| seat.seat_number }
     end
 
-    def first_free_seats request
+    def first_free_seats number
       @seats.select { |seat| seat.free? }.map { |seat| seat.id }
-        .first request[:seats] 
+        .first number
     end
 
     def underbooked? request
