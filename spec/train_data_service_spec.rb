@@ -189,14 +189,6 @@ describe 'Train Data Service' do
                @train_data_service.reserve_seats @request
             end
           end
-
-          context 'but ends up being > 70% reserved after the booking' do
-            it 'does not reserve the seat'
-          end
-
-          context 'and becomes exactly 70% reserved after the booking' do
-            it 'reserves the seat'
-          end
         end
       end
     end  
@@ -222,7 +214,19 @@ describe 'Train Data Service' do
           @train_data_service.reserve_seats request            
         end
       end
-    end  
+    end
+
+    describe 'multiple carriages' do
+      context 'when the train is under 70% booked' do
+        context 'but ends up being > 70% reserved after the booking' do
+          it 'does not reserve the seat'
+        end
+
+        context 'and becomes exactly 70% reserved after the booking' do
+          it 'reserves the seat'
+        end
+      end
+    end
   end
 
   def seats_doc *seats
