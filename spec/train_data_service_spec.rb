@@ -169,26 +169,7 @@ describe 'Train Data Service' do
 
         context 'when a carriage is under 70% reserved' do
           context 'and remains so after the booking' do
-            before :each do
-              allow(@train_data_api).to(
-                receive(:seats_for).with('train_1234').and_return(
-                  seats_doc(
-                    free(1, 'A'), booked(2, 'A'), booked(3, 'A'),
-                    booked(4, 'A'), booked(5, 'A'), 
-                    free(1, 'B'), free(2, 'B'), free(3, 'B'), free(4, 'B')
-                  )
-                ))
-            end
-            
-            it 'reserves the seat' do
-              expect(@train_data_api).to(
-                receive(:reserve).with(hash_including(seats: %w{1B}))
-              )
-
-              @train_data_service.reserve_seats @request
-            end
-
-            
+            it 'reserves the seat'
           end
 
           context 'but ends up being > 70% reserved after the booking' do
