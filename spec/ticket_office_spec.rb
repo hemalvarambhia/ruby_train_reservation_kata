@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'ticket_office'
 describe 'Ticket office' do
   describe '#make_reservation' do

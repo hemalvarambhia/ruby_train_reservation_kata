@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'json'
 require 'train_data_service'
 describe 'Train Data Service' do
