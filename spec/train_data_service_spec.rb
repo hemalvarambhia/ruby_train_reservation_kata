@@ -194,6 +194,8 @@ describe 'Train Data Service' do
     end  
 
     describe 'booking multiple seats' do
+      before(:each) { @request = { train_id: 'train_1234', seats: 3 } }
+      
       context 'when the train can accommodate the booking' do
         before :each do
           allow(@train_data_api).to(
@@ -206,24 +208,10 @@ describe 'Train Data Service' do
         end
 
         it 'books all the seats in one carriage' do
-          request = { train_id: 'train_1234', seats: 3 }
-          
 	  expect(@train_data_api).to(
             receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
 
-          @train_data_service.reserve_seats request            
-        end
-      end
-    end
-
-    describe 'multiple carriages' do
-      context 'when the train is under 70% booked' do
-        context 'but ends up being > 70% reserved after the booking' do
-          it 'does not reserve the seat'
-        end
-
-        context 'and becomes exactly 70% reserved after the booking' do
-          it 'reserves the seat'
+          @train_data_service.reserve_seats @request            
         end
       end
     end
