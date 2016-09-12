@@ -156,7 +156,9 @@ describe 'Train Data Service' do
                   booked(1, 'A'), booked(2, 'A'), booked(3, 'A'),
                   booked(4, 'A'), booked(5, 'A'), 
                   free(1, 'B'), free(2, 'B'), free(3, 'B'),
-                  free(4, 'B'), free(5, 'B')
+                  free(4, 'B'), free(5, 'B'),
+                  free(1, 'C'), free(2, 'C'), free(3, 'C'),
+                  free(4, 'C'), free(5, 'C')
                 )
               ))
           end
