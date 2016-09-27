@@ -1,14 +1,14 @@
 require 'spec_helper'
 require 'json'
-require 'train_data_service'
-describe 'Train Data Service' do
+require 'reservation_service'
+describe 'ReservationService' do
   describe '#reserve_seats' do
     before(:each) do
       @train_data_api = double :train_data_api 
       booking_reference =
         double(:booking_reference, new_reference_number: 'a_reference_number')
-      @train_data_service = 
-        TrainDataService.new(@train_data_api, booking_reference)
+      @reservation_service = 
+        ReservationService.new(@train_data_api, booking_reference)
     end
     
     describe 'reserving a single seat' do
@@ -28,7 +28,7 @@ describe 'Train Data Service' do
             receive(:reserve).with(
               booking_reference: '', train_id: 'train_1234', seats: %w{}))
 
-          reservation = @train_data_service.reserve_seats @request
+          reservation = @reservation_service.reserve_seats @request
 
           expect(reservation).not_to be_made_on 'train_1234'
         end
@@ -48,7 +48,7 @@ describe 'Train Data Service' do
               booking_reference: 'a_reference_number',
               train_id: 'train_1234', seats: %w{1A}))
           
-          @train_data_service.reserve_seats @request
+          @reservation_service.reserve_seats @request
         end
 
         describe 'when the request is successful' do
@@ -58,7 +58,7 @@ describe 'Train Data Service' do
                 booking_reference: 'a_reference_number',
                 train_id: 'train_1234', seats: %w{1A}))
           
-            reservation = @train_data_service.reserve_seats @request
+            reservation = @reservation_service.reserve_seats @request
 
             expect(reservation).to be_made_on('train_1234').for_seats '1A'
           end
@@ -75,7 +75,7 @@ describe 'Train Data Service' do
               'already booked with reference: existing'
             ))
             
-            reservation = @train_data_service.reserve_seats @request
+            reservation = @reservation_service.reserve_seats @request
             
             expect(reservation).not_to be_made_on 'train_1234'
           end
@@ -97,7 +97,7 @@ describe 'Train Data Service' do
               seats: %w{2A}
             )
 
-            reservation = @train_data_service.reserve_seats @request
+            reservation = @reservation_service.reserve_seats @request
 
 	    expect(reservation).to be_made_on('train_1234').for_seats '2A'
           end
@@ -116,7 +116,7 @@ describe 'Train Data Service' do
               receive(:reserve).with(
                 booking_reference: '', train_id: 'train_1234', seats: %w{}))
       
-            reservation = @train_data_service.reserve_seats @request
+            reservation = @reservation_service.reserve_seats @request
 
             expect(reservation).not_to be_made_on 'train_1234'
           end
@@ -142,7 +142,7 @@ describe 'Train Data Service' do
             }
             expect(@train_data_api).to receive(:reserve).with reservation
 
-            @train_data_service.reserve_seats @request
+            @reservation_service.reserve_seats @request
           end
         end
       end
@@ -167,7 +167,7 @@ describe 'Train Data Service' do
              expect(@train_data_api).to(
                receive(:reserve).with(hash_including(seats: %w{1B})))
 
-             @train_data_service.reserve_seats @request
+             @reservation_service.reserve_seats @request
           end
         end
 
@@ -189,7 +189,7 @@ describe 'Train Data Service' do
                expect(@train_data_api).to(
                  receive(:reserve).with(hash_including(seats: %w{1B})))
 
-               @train_data_service.reserve_seats @request
+               @reservation_service.reserve_seats @request
             end
           end
         end
@@ -214,7 +214,7 @@ describe 'Train Data Service' do
 	  expect(@train_data_api).to(
             receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
 
-          @train_data_service.reserve_seats @request            
+          @reservation_service.reserve_seats @request            
         end
       end
     end

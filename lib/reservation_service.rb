@@ -5,7 +5,7 @@ class Fixnum
   end
 end
 
-class TrainDataService
+class ReservationService
   def initialize(train_data_api, booking_reference_service)
     @train_data_api = train_data_api
     @booking_reference = booking_reference_service
