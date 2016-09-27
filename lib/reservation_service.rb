@@ -6,8 +6,8 @@ class Fixnum
 end
 
 class ReservationService
-  def initialize(train_data_api, booking_reference_service)
-    @train_data_api = train_data_api
+  def initialize(train_data_service, booking_reference_service)
+    @train_data_service = train_data_service
     @booking_reference = booking_reference_service
   end
 
@@ -21,7 +21,7 @@ class ReservationService
         make_reservation(request, coach)
       end
 
-    response = @train_data_api.reserve reservation
+    response = @train_data_service.reserve reservation
 
     if response=~/already booked/
       return no_reservation_on(request[:train_id])
@@ -34,7 +34,7 @@ class ReservationService
 
   def train_with_id train_id
     seats_doc = JSON.parse(
-      @train_data_api.seats_for(train_id), symbolize_names: true)[:seats]
+      @train_data_service.seats_for(train_id), symbolize_names: true)[:seats]
     all_seats = seats_doc.map { |_, seat| Seat.new seat }
     all_seats.group_by { |seat| seat.coach }.map do |_, seats|
       Coach.new seats
