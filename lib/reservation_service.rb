@@ -45,7 +45,7 @@ class ReservationService
     {
       train_id: request[:train_id],
       booking_reference: @booking_reference.new_reference_number,
-      seats: coach.first_free_seats(request[:seats])
+      seats: coach.first_free_seats(request[:seat_count])
     }
   end
 
@@ -65,7 +65,7 @@ class ReservationService
 
     def underbooked? request
       number_booked =
-        @seats.count { |seat| seat.booked? } + request[:seats]
+        @seats.count { |seat| seat.booked? } + request[:seat_count]
 
       Rational(number_booked, @seats.size) <= 70.percent
     end

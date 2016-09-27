@@ -13,7 +13,7 @@ describe 'ReservationService' do
     
     describe 'reserving a single seat' do
       before :each do 
-        @request = { train_id: 'train_1234', seats: 1 }  
+        @request = { train_id: 'train_1234', seat_count: 1 }  
       end
 
       context 'when the train is fully-booked' do
@@ -197,7 +197,7 @@ describe 'ReservationService' do
     end  
 
     describe 'booking multiple seats' do
-      before(:each) { @request = { train_id: 'train_1234', seats: 3 } }
+      before(:each) { @request = { train_id: 'train_1234', seat_count: 3 } }
       
       context 'when the train can accommodate the booking' do
         before :each do
