@@ -4,11 +4,11 @@ require 'reservation_service'
 describe 'ReservationService' do
   describe '#reserve_seats' do
     before(:each) do
-      @train_data_api = double :train_data_api 
+      @train_data_service = double :train_data_service 
       booking_reference =
         double(:booking_reference, new_reference_number: 'a_reference_number')
       @reservation_service = 
-        ReservationService.new(@train_data_api, booking_reference)
+        ReservationService.new(@train_data_service, booking_reference)
     end
     
     describe 'reserving a single seat' do
@@ -18,13 +18,13 @@ describe 'ReservationService' do
 
       context 'when the train is fully-booked' do
         before :each do
-          allow(@train_data_api).to(
+          allow(@train_data_service).to(
             receive(:seats_for).with('train_1234').and_return(
               seats_doc(booked(1, 'A'), booked(2, 'A'), booked(3, 'A'))))
         end
 
         it 'does not reserve the seat' do
-          expect(@train_data_api).to(
+          expect(@train_data_service).to(
             receive(:reserve).with(
               booking_reference: '', train_id: 'train_1234', seats: %w{}))
 
@@ -36,14 +36,14 @@ describe 'ReservationService' do
 
       context 'when the train has no existing reservations' do
         before :each do
-          allow(@train_data_api).to(
+          allow(@train_data_service).to(
             receive(:seats_for).with('train_1234').and_return(
               seats_doc(free(1, 'A'), free(2, 'A'), free(3, 'A'))
           ))
         end
         
         it 'reserves the first available seat' do
-          expect(@train_data_api).to(
+          expect(@train_data_service).to(
             receive(:reserve).with(
               booking_reference: 'a_reference_number',
               train_id: 'train_1234', seats: %w{1A}))
@@ -53,7 +53,7 @@ describe 'ReservationService' do
 
         describe 'when the request is successful' do
           it 'returns the reservation that was made' do
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:reserve).with(
                 booking_reference: 'a_reference_number',
                 train_id: 'train_1234', seats: %w{1A}))
@@ -70,7 +70,7 @@ describe 'ReservationService' do
               booking_reference: 'a_reference_number',
               train_id: 'train_1234', seats: %w{1A}
             }
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:reserve).with(reservation).and_return(
               'already booked with reference: existing'
             ))
@@ -85,14 +85,14 @@ describe 'ReservationService' do
       context 'when the train is under 70% reserved' do
         context 'and remains so after the reservation' do
           before :each do
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(booked(1, 'A'), free(2, 'A'), free(3, 'A'))
             ))
           end
           
           it 'reserves the first available seat' do
-            expect(@train_data_api).to receive(:reserve).with(
+            expect(@train_data_service).to receive(:reserve).with(
               train_id: 'train_1234', booking_reference: 'a_reference_number',
               seats: %w{2A}
             )
@@ -105,14 +105,14 @@ describe 'ReservationService' do
 
         context 'but ends up being > 70% reserved after the booking' do
           before :each do
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(booked(1, 'A'), free(2, 'A'), booked(3, 'A'))
             ))
           end
 
           it 'does not reserve the seat' do
-            expect(@train_data_api).to(
+            expect(@train_data_service).to(
               receive(:reserve).with(
                 booking_reference: '', train_id: 'train_1234', seats: %w{}))
       
@@ -124,7 +124,7 @@ describe 'ReservationService' do
 
         context 'and becomes exactly 70% reserved after the booking' do
           before :each do
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(
                   booked(1, 'A'), booked(2, 'A'), booked(3, 'A'),
@@ -140,7 +140,7 @@ describe 'ReservationService' do
               booking_reference: 'a_reference_number',
               seats: %w{7A}
             }
-            expect(@train_data_api).to receive(:reserve).with reservation
+            expect(@train_data_service).to receive(:reserve).with reservation
 
             @reservation_service.reserve_seats @request
           end
@@ -150,7 +150,7 @@ describe 'ReservationService' do
       describe 'multiple carriages' do
         context 'when a carriage is completely free' do
           before :each do
-            allow(@train_data_api).to(
+            allow(@train_data_service).to(
               receive(:seats_for).with('train_1234').and_return(
                 seats_doc(
                   booked(1, 'A'), booked(2, 'A'), booked(3, 'A'),
@@ -164,7 +164,7 @@ describe 'ReservationService' do
           end
 
           it 'reserves the seat in that carriage' do
-             expect(@train_data_api).to(
+             expect(@train_data_service).to(
                receive(:reserve).with(hash_including(seats: %w{1B})))
 
              @reservation_service.reserve_seats @request
@@ -174,7 +174,7 @@ describe 'ReservationService' do
         context 'when a carriage is under 70% reserved' do
           context 'and remains so after the booking' do
             before :each do
-              allow(@train_data_api).to(
+              allow(@train_data_service).to(
                 receive(:seats_for).with('train_1234').and_return(
                   seats_doc(
                     free(1, 'A'), booked(2, 'A'), booked(3, 'A'),
@@ -186,7 +186,7 @@ describe 'ReservationService' do
             end
             
             it 'reserves the seat in that carriage' do
-               expect(@train_data_api).to(
+               expect(@train_data_service).to(
                  receive(:reserve).with(hash_including(seats: %w{1B})))
 
                @reservation_service.reserve_seats @request
@@ -201,7 +201,7 @@ describe 'ReservationService' do
       
       context 'when the train can accommodate the booking' do
         before :each do
-          allow(@train_data_api).to(
+          allow(@train_data_service).to(
             receive(:seats_for).with('train_1234').and_return(
               seats_doc(
                 booked(1, 'A'), free(5, 'A'), free(4, 'A'),
@@ -211,7 +211,7 @@ describe 'ReservationService' do
         end
 
         it 'books all the seats in one carriage' do
-	  expect(@train_data_api).to(
+	  expect(@train_data_service).to(
             receive(:reserve).with(hash_including(seats: %w{2A 3A 4A})))
 
           @reservation_service.reserve_seats @request            
